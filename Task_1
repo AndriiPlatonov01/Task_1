@@ -1,0 +1,15 @@
+import sqlite3
+
+connection = sqlite3.connect(":memory:")
+cursor = connection.cursor()
+
+cursor.execute("CREATE TABLE movies (id INT, title TEXT, year INT);")
+cursor.execute("INSERT INTO movies VALUES (1, 'Inception', 2010);")
+
+def run_query(cursor, query):
+    cursor.execute(query)
+    return cursor.fetchall()
+
+query = "SELECT * FROM movies;"
+result = run_query(cursor, query)
+print(result)
