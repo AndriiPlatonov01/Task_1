@@ -1,52 +1,49 @@
 import sqlite3
 
+# Initialize the database connection in memory
 connection = sqlite3.connect(":memory:")
 cursor = connection.cursor()
 
+# Initial setup: create table and insert sample data
 cursor.execute("CREATE TABLE movies (id INT, title TEXT, year INT);")
 cursor.execute("INSERT INTO movies VALUES (1, 'Inception', 2010);")
 
+# --- Task 1: Create the Generic Python Function ---
 def run_query(cursor, query):
+    """Executes a SQL query and returns all fetched results."""
     cursor.execute(query)
     return cursor.fetchall()
 
+# Test Task 1
 query = "SELECT * FROM movies;"
 result = run_query(cursor, query)
-print(result)
+print("Task 1 Result:", result)
 
 
-#--- Task 2: Basic SELECT Queries ---
-
+# --- Task 2: Basic SELECT Queries ---
 run_query(cursor, "CREATE TABLE actors (id INT, name TEXT);")
 run_query(cursor, "CREATE TABLE customers (id INT, name TEXT, country TEXT);")
 
 run_query(cursor, "INSERT INTO actors VALUES (1, 'Leonardo DiCaprio'), (2, 'Tom Hardy');")
 run_query(cursor, "INSERT INTO customers VALUES (1, 'Alice', 'Ukraine'), (2, 'Bob', 'Canada');")
 
-query_movies = "SELECT * FROM movies;"
-print(run_query(cursor, query_movies))
+# Fetch all records from the new tables
+print("All Movies:", run_query(cursor, "SELECT * FROM movies;"))
+print("All Actors:", run_query(cursor, "SELECT * FROM actors;"))
+print("All Customers:", run_query(cursor, "SELECT * FROM customers;"))
 
-query_actors = "SELECT * FROM actors;"
-print(run_query(cursor, query_actors))
-
-query_customers = "SELECT * FROM customers;"
-print(run_query(cursor, query_customers))
 
 # --- Task 3: WHERE Clause ---
-
 run_query(cursor, "CREATE TABLE rentings (id INT, movie_id INT, rating INT);")
 run_query(cursor, "INSERT INTO movies VALUES (2, 'Dune', 2021), (3, 'Interstellar', 2014);")
 run_query(cursor, "INSERT INTO customers VALUES (3, 'Charlie', 'Canada'), (4, 'David', 'France');")
 run_query(cursor, "INSERT INTO rentings VALUES (1, 1, 5), (2, 2, 4), (3, 3, 3);")
 
-query_movies_2015 = "SELECT * FROM movies WHERE year > 2015;"
-print(run_query(cursor, query_movies_2015))
+# Queries using comparison operators and string filtering
+print("Movies released after 2015:", run_query(cursor, "SELECT * FROM movies WHERE year > 2015;"))
+print("Customers from Canada:", run_query(cursor, "SELECT * FROM customers WHERE country = 'Canada';"))
+print("Highly rated rentals:", run_query(cursor, "SELECT * FROM rentings WHERE rating >= 4;"))
 
-query_canada = "SELECT * FROM customers WHERE country = 'Canada';"
-print(run_query(cursor, query_canada))
-
-query_rating = "SELECT * FROM rentings WHERE rating >= 4;"
-print(run_query(cursor, query_rating))
 
 # --- Task 4: Aggregation Functions ---
 
@@ -55,79 +52,56 @@ run_query(cursor, "UPDATE movies SET price = 10.5 WHERE id = 1;")
 run_query(cursor, "UPDATE movies SET price = 12.0 WHERE id = 2;")
 run_query(cursor, "UPDATE movies SET price = 9.5 WHERE id = 3;")
 
-# Total numbers
-query_count = "SELECT COUNT(*) FROM movies;"
-
-print(run_query(cursor, query_count))
-
-# AVG
-query_avg_price = "SELECT AVG(price) FROM movies;"
-print(run_query(cursor, query_avg_price))
-
-
-query_avg_rating = "SELECT AVG(rating) FROM rentings;"
-print(run_query(cursor, query_avg_rating))
+# Use COUNT and AVG functions
+print("Total number of movies:", run_query(cursor, "SELECT COUNT(*) FROM movies;"))
+print("Average movie price:", run_query(cursor, "SELECT AVG(price) FROM movies;"))
+print("Average rental rating:", run_query(cursor, "SELECT AVG(rating) FROM rentings;"))
 
 
 # --- Task 5: GROUP BY ---
-
+# Categorize data and analyze results per group
 run_query(cursor, "ALTER TABLE movies ADD COLUMN genre TEXT;")
 run_query(cursor, "UPDATE movies SET genre = 'Sci-Fi' WHERE id IN (1, 2);")
 run_query(cursor, "UPDATE movies SET genre = 'Drama' WHERE id = 3;")
 
-query_genre_count = "SELECT genre, COUNT(*) FROM movies GROUP BY genre;"
-print(run_query(cursor, query_genre_count))
-
-query_customer_country = "SELECT country, COUNT(*) FROM customers GROUP BY country;"
-
-print(run_query(cursor, query_customer_country))
-
-query_rentings_count = "SELECT movie_id, COUNT(*) FROM rentings GROUP BY movie_id;"
-print(run_query(cursor, query_rentings_count))
+# Counting records per category (genre, country, and movie_id)
+print("Movies per genre:", run_query(cursor, "SELECT genre, COUNT(*) FROM movies GROUP BY genre;"))
+print("Customers per country:", run_query(cursor, "SELECT country, COUNT(*) FROM customers GROUP BY country;"))
+print("Rentals per movie:", run_query(cursor, "SELECT movie_id, COUNT(*) FROM rentings GROUP BY movie_id;"))
 
 
 # --- Task 6: JOIN Queries ---
-
+# Query data from multiple related tables
 run_query(cursor, "CREATE TABLE actsin (actor_id INT, movie_id INT);")
 run_query(cursor, "INSERT INTO actsin VALUES (1, 1), (1, 2), (2, 2);")
 
+# Combine tables to find average ratings per movie title
 query_join_ratings = """
 SELECT m.title, AVG(r.rating) 
 FROM movies m 
 JOIN rentings r ON m.id = r.movie_id 
 GROUP BY m.title;
 """
+print("Average rating per title:", run_query(cursor, query_join_ratings))
 
-print(run_query(cursor, query_join_ratings))
-
-
+# Count movies each actor acted in
 query_actor_movies = """
 SELECT a.name, COUNT(ai.movie_id) 
 FROM actors a 
 JOIN actsin ai ON a.id = ai.actor_id 
 GROUP BY a.name;
 """
-print(run_query(cursor, query_actor_movies))
+print("Movies per actor:", run_query(cursor, query_actor_movies))
 
-
-query_customer_rentals = """
-SELECT c.name, COUNT(r.id) 
-FROM customers c 
-JOIN rentings r ON c.id = r.id 
-GROUP BY c.name;
-"""
-print(run_query(cursor, query_customer_rentals))
 
 # --- Task 7: HAVING Clause ---
-
-
+# Filter aggregated results (groups)
 run_query(cursor, "INSERT INTO movies (id, title, year, genre) VALUES (4, 'The Matrix', 1999, 'Sci-Fi');")
 run_query(cursor, "INSERT INTO movies (id, title, year, genre) VALUES (5, 'Tenet', 2020, 'Sci-Fi');")
 
-query_popular_genres = "SELECT genre, COUNT(*) FROM movies GROUP BY genre HAVING COUNT(*) > 3;"
-print("Genres with more than 3 movies:")
-print(run_query(cursor, query_popular_genres))
-
+# Using HAVING to filter groups with specific conditions
+print("Genres with more than 3 movies:", 
+      run_query(cursor, "SELECT genre, COUNT(*) FROM movies GROUP BY genre HAVING COUNT(*) > 3;"))
 
 query_high_rated_movies = """
 SELECT movie_id, AVG(rating) 
@@ -135,37 +109,64 @@ FROM rentings
 GROUP BY movie_id 
 HAVING AVG(rating) > 4;
 """
-
-print(run_query(cursor, query_high_rated_movies))
-
-query_active_customers = """
-SELECT c.name, COUNT(r.id) 
-FROM customers c 
-JOIN rentings r ON c.id = r.id 
-GROUP BY c.name 
-HAVING COUNT(r.id) > 1;
-"""
-
-print(run_query(cursor, query_active_customers))
+print("Movies with average rating > 4:", run_query(cursor, query_high_rated_movies))
 
 
 # --- Task 8: Output Formatting ---
-
-
+# Make query results human-readable by looping and adding labels
 query_final_list = "SELECT title, year, genre, price FROM movies;"
-
 final_results = run_query(cursor, query_final_list)
 
 print("\n--- FINAL REPORT ON FILMS ---")
-
 for row in final_results:
-
-    title = row[0]
-    year = row[1]
-    genre = row[2]
-    price = row[3]
-    
+    title, year, genre, price = row
+    # Print formatted row with manual labels
     print(f"FILM: {title:<15} | Year: {year} | Genre: {genre:<10} | Price: ${price}")
 
 
-    
+# --- Task 9: Error Handling ---
+# Safely handle potential SQL errors using try-except blocks
+def run_query_safe(cursor, query):
+    try:
+        cursor.execute(query)
+        return cursor.fetchall()
+    except sqlite3.Error as e:
+        # Catch exception and print a friendly message instead of crashing
+        print(f"--- [SQL Error]: {e} ---")
+        return None
+
+# Attempting to execute an invalid query
+print("\nTesting Error Handling:")
+invalid_query = "SELECT * FROM unknown_table;"
+result = run_query_safe(cursor, invalid_query)
+
+if result is None:
+    print("The program caught the error and continued execution.")
+
+
+# --- Bonus Task: ORDER BY and LIMIT ---
+# Sorting and restricting the number of results
+query_top_movies = "SELECT title, price FROM movies ORDER BY price DESC LIMIT 2;"
+print("\n--- TOP 2 MOST EXPENSIVE MOVIES ---")
+top_movies = run_query(cursor, query_top_movies)
+for title, price in top_movies:
+    print(f"Film: {title:<15} | Price: ${price}")
+
+
+# --- Bonus Task: Convert results into dictionaries ---
+# Transform raw tuples into structured dictionary format for easier API use
+def get_movies_as_dicts(cursor):
+    raw_data = run_query(cursor, "SELECT title, year, genre FROM movies LIMIT 3;")
+    dict_results = []
+    for row in raw_data:
+        movie_dict = {
+            "title": row[0],
+            "year": row[1],
+            "genre": row[2]
+        }
+        dict_results.append(movie_dict)
+    return dict_results
+
+print("\n--- DATA AS DICTIONARIES (FOR API) ---")
+for d in get_movies_as_dicts(cursor):
+    print(d)
