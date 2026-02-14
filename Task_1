@@ -48,9 +48,124 @@ print(run_query(cursor, query_canada))
 query_rating = "SELECT * FROM rentings WHERE rating >= 4;"
 print(run_query(cursor, query_rating))
 
+# --- Task 4: Aggregation Functions ---
+
+run_query(cursor, "ALTER TABLE movies ADD COLUMN price REAL;")
+run_query(cursor, "UPDATE movies SET price = 10.5 WHERE id = 1;")
+run_query(cursor, "UPDATE movies SET price = 12.0 WHERE id = 2;")
+run_query(cursor, "UPDATE movies SET price = 9.5 WHERE id = 3;")
+
+# Total numbers
+query_count = "SELECT COUNT(*) FROM movies;"
+
+print(run_query(cursor, query_count))
+
+# AVG
+query_avg_price = "SELECT AVG(price) FROM movies;"
+print(run_query(cursor, query_avg_price))
 
 
+query_avg_rating = "SELECT AVG(rating) FROM rentings;"
+print(run_query(cursor, query_avg_rating))
 
 
+# --- Task 5: GROUP BY ---
+
+run_query(cursor, "ALTER TABLE movies ADD COLUMN genre TEXT;")
+run_query(cursor, "UPDATE movies SET genre = 'Sci-Fi' WHERE id IN (1, 2);")
+run_query(cursor, "UPDATE movies SET genre = 'Drama' WHERE id = 3;")
+
+query_genre_count = "SELECT genre, COUNT(*) FROM movies GROUP BY genre;"
+print(run_query(cursor, query_genre_count))
+
+query_customer_country = "SELECT country, COUNT(*) FROM customers GROUP BY country;"
+
+print(run_query(cursor, query_customer_country))
+
+query_rentings_count = "SELECT movie_id, COUNT(*) FROM rentings GROUP BY movie_id;"
+print(run_query(cursor, query_rentings_count))
 
 
+# --- Task 6: JOIN Queries ---
+
+run_query(cursor, "CREATE TABLE actsin (actor_id INT, movie_id INT);")
+run_query(cursor, "INSERT INTO actsin VALUES (1, 1), (1, 2), (2, 2);")
+
+query_join_ratings = """
+SELECT m.title, AVG(r.rating) 
+FROM movies m 
+JOIN rentings r ON m.id = r.movie_id 
+GROUP BY m.title;
+"""
+
+print(run_query(cursor, query_join_ratings))
+
+
+query_actor_movies = """
+SELECT a.name, COUNT(ai.movie_id) 
+FROM actors a 
+JOIN actsin ai ON a.id = ai.actor_id 
+GROUP BY a.name;
+"""
+print(run_query(cursor, query_actor_movies))
+
+
+query_customer_rentals = """
+SELECT c.name, COUNT(r.id) 
+FROM customers c 
+JOIN rentings r ON c.id = r.id 
+GROUP BY c.name;
+"""
+print(run_query(cursor, query_customer_rentals))
+
+# --- Task 7: HAVING Clause ---
+
+
+run_query(cursor, "INSERT INTO movies (id, title, year, genre) VALUES (4, 'The Matrix', 1999, 'Sci-Fi');")
+run_query(cursor, "INSERT INTO movies (id, title, year, genre) VALUES (5, 'Tenet', 2020, 'Sci-Fi');")
+
+query_popular_genres = "SELECT genre, COUNT(*) FROM movies GROUP BY genre HAVING COUNT(*) > 3;"
+print("Genres with more than 3 movies:")
+print(run_query(cursor, query_popular_genres))
+
+
+query_high_rated_movies = """
+SELECT movie_id, AVG(rating) 
+FROM rentings 
+GROUP BY movie_id 
+HAVING AVG(rating) > 4;
+"""
+
+print(run_query(cursor, query_high_rated_movies))
+
+query_active_customers = """
+SELECT c.name, COUNT(r.id) 
+FROM customers c 
+JOIN rentings r ON c.id = r.id 
+GROUP BY c.name 
+HAVING COUNT(r.id) > 1;
+"""
+
+print(run_query(cursor, query_active_customers))
+
+
+# --- Task 8: Output Formatting ---
+
+
+query_final_list = "SELECT title, year, genre, price FROM movies;"
+
+final_results = run_query(cursor, query_final_list)
+
+print("\n--- FINAL REPORT ON FILMS ---")
+
+for row in final_results:
+
+    title = row[0]
+    year = row[1]
+    genre = row[2]
+    price = row[3]
+    
+    print(f"FILM: {title:<15} | Year: {year} | Genre: {genre:<10} | Price: ${price}")
+
+
+    
