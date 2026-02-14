@@ -32,3 +32,6 @@ print(run_query(cursor, query_actors))
 
 query_customers = "SELECT * FROM customers;"
 print(run_query(cursor, query_customers))
+
+
+
