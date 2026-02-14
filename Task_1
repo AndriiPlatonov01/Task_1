@@ -15,23 +15,42 @@ result = run_query(cursor, query)
 print(result)
 
 
-Task 2 – Basic SELECT Queries
+#--- Task 2: Basic SELECT Queries ---
 
+run_query(cursor, "CREATE TABLE actors (id INT, name TEXT);")
+run_query(cursor, "CREATE TABLE customers (id INT, name TEXT, country TEXT);")
 
-cursor.execute("CREATE TABLE actors (id INT, name TEXT);")
-cursor.execute("CREATE TABLE customers (id INT, name TEXT, country TEXT);")
-cursor.execute("INSERT INTO actors VALUES (1, 'Leonardo DiCaprio'), (2, 'Tom Hardy');")
-cursor.execute("INSERT INTO customers VALUES (1, 'Alice', 'Ukraine'), (2, 'Bob', 'Canada');")
+run_query(cursor, "INSERT INTO actors VALUES (1, 'Leonardo DiCaprio'), (2, 'Tom Hardy');")
+run_query(cursor, "INSERT INTO customers VALUES (1, 'Alice', 'Ukraine'), (2, 'Bob', 'Canada');")
 
 query_movies = "SELECT * FROM movies;"
 print(run_query(cursor, query_movies))
-
 
 query_actors = "SELECT * FROM actors;"
 print(run_query(cursor, query_actors))
 
 query_customers = "SELECT * FROM customers;"
 print(run_query(cursor, query_customers))
+
+# --- Task 3: WHERE Clause ---
+
+run_query(cursor, "CREATE TABLE rentings (id INT, movie_id INT, rating INT);")
+run_query(cursor, "INSERT INTO movies VALUES (2, 'Dune', 2021), (3, 'Interstellar', 2014);")
+run_query(cursor, "INSERT INTO customers VALUES (3, 'Charlie', 'Canada'), (4, 'David', 'France');")
+run_query(cursor, "INSERT INTO rentings VALUES (1, 1, 5), (2, 2, 4), (3, 3, 3);")
+
+query_movies_2015 = "SELECT * FROM movies WHERE year > 2015;"
+print(run_query(cursor, query_movies_2015))
+
+query_canada = "SELECT * FROM customers WHERE country = 'Canada';"
+print(run_query(cursor, query_canada))
+
+query_rating = "SELECT * FROM rentings WHERE rating >= 4;"
+print(run_query(cursor, query_rating))
+
+
+
+
 
 
 
