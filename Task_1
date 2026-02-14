@@ -13,3 +13,22 @@ def run_query(cursor, query):
 query = "SELECT * FROM movies;"
 result = run_query(cursor, query)
 print(result)
+
+
+Task 2 – Basic SELECT Queries
+
+
+cursor.execute("CREATE TABLE actors (id INT, name TEXT);")
+cursor.execute("CREATE TABLE customers (id INT, name TEXT, country TEXT);")
+cursor.execute("INSERT INTO actors VALUES (1, 'Leonardo DiCaprio'), (2, 'Tom Hardy');")
+cursor.execute("INSERT INTO customers VALUES (1, 'Alice', 'Ukraine'), (2, 'Bob', 'Canada');")
+
+query_movies = "SELECT * FROM movies;"
+print(run_query(cursor, query_movies))
+
+
+query_actors = "SELECT * FROM actors;"
+print(run_query(cursor, query_actors))
+
+query_customers = "SELECT * FROM customers;"
+print(run_query(cursor, query_customers))
